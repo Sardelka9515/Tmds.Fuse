@@ -8,7 +8,7 @@ namespace Tmds.Fuse
 {
     public class FuseFileSystemStringBase : FuseFileSystemBase
     {
-        public static string RootPath => "/";
+        public static string RootPathString => "/";
 
         private readonly Encoding _pathEncoding;
 
