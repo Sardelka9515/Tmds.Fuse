@@ -7,7 +7,6 @@ namespace Tmds.Fuse
 
     struct fuse { }
     struct path { }
-    struct fuse_fill_dir { }
     enum fuse_fill_dir_flags { }
     struct fuse_file_info { }
 
@@ -23,9 +22,8 @@ namespace Tmds.Fuse
         int allocated;
     };
 
-    unsafe delegate int fuse_fill_dir_Delegate(void* buf, void* name, stat* stat, ulong off, fuse_fill_dir_flags flags);
     unsafe delegate int getattr_Delegate(path* path, stat* stat, fuse_file_info* fi);
-    unsafe delegate int readdir_Delegate(path* path, void* buf, fuse_fill_dir* filler, ulong offset, fuse_file_info* fi, int flags);
+    unsafe delegate int readdir_Delegate(path* path, void* buf, fuse_fill_dir_func filler, ulong offset, fuse_file_info* fi, int flags);
     unsafe delegate int open_Delegate(path* path, fuse_file_info* fi);
     unsafe delegate int read_Delegate(path* path, void* buffer, size_t size, ulong off, fuse_file_info* fi);
     unsafe delegate int release_Delegate(path* path, fuse_file_info* fi);

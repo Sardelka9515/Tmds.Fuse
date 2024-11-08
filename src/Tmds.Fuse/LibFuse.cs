@@ -1,3 +1,5 @@
+// void *buf, const char *name, const struct stat *stbuf, off_t off, enum fuse_fill_dir_flags flags
+global using unsafe fuse_fill_dir_func = delegate* unmanaged[SuppressGCTransition]<void*, byte*, byte*, ulong, Tmds.Fuse.fuse_fill_dir_flags, int>;
 using System;
 using System.Runtime.InteropServices;
 using System.Text;

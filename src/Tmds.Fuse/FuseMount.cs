@@ -49,19 +49,6 @@ namespace Tmds.Fuse
         private bool _mounted;
         private readonly TaskCompletionSource<object> _mountTaskCompletion = new TaskCompletionSource<object>();
 
-        private unsafe class ManagedFiller
-        {
-            public readonly fuse_fill_dir* Filler;
-            public readonly fuse_fill_dir_Delegate Delegate;
-
-            public ManagedFiller(fuse_fill_dir* filler, fuse_fill_dir_Delegate fillDelegate)
-            {
-                Filler = filler;
-                Delegate = fillDelegate;
-            }
-        }
-        private ManagedFiller _previousFiller;
-
         public unsafe FuseMount(string mountPoint, IFuseFileSystem fileSystem, MountOptions options)
         {
             _mountPoint = mountPoint;
@@ -427,23 +414,11 @@ namespace Tmds.Fuse
             }
         }
 
-        private unsafe int Readdir(path* path, void* buf, fuse_fill_dir* filler, ulong offset, fuse_file_info* fi, int flags)
+        private unsafe int Readdir(path* path, void* buf, fuse_fill_dir_func filler, ulong offset, fuse_file_info* fi, int flags)
         {
             try
             {
-                fuse_fill_dir_Delegate fillDelegate;
-                ManagedFiller previousFiller = _previousFiller;
-                if (previousFiller != null && previousFiller.Filler == filler)
-                {
-                    fillDelegate = previousFiller.Delegate;
-                }
-                else
-                {
-                    fillDelegate = Marshal.GetDelegateForFunctionPointer<fuse_fill_dir_Delegate>(new IntPtr(filler));
-                    _previousFiller = new ManagedFiller(filler, fillDelegate);
-                }
-
-                return _fileSystem.ReadDir(ToSpan(path), offset, (ReadDirFlags)flags, ToDirectoryContent(buf, fillDelegate), ref ToFileInfoRef(fi));
+                return _fileSystem.ReadDir(ToSpan(path), offset, (ReadDirFlags)flags, ToDirectoryContent(buf, filler), ref ToFileInfoRef(fi));
             }
             catch
             {
@@ -519,7 +494,7 @@ namespace Tmds.Fuse
             return span.Slice(0, span.IndexOf((byte)0));
         }
 
-        private unsafe DirectoryContent ToDirectoryContent(void* buffer, fuse_fill_dir_Delegate fillDelegate) => new DirectoryContent(buffer, fillDelegate);
+        private unsafe DirectoryContent ToDirectoryContent(void* buffer, fuse_fill_dir_func fillFunc) => new DirectoryContent(buffer, fillFunc);
 
         public unsafe void Mount()
         {

@@ -7,12 +7,12 @@ namespace Tmds.Fuse
     {
         private const int FUSE_NAME_MAX = 1024;
         private readonly void* _buffer;
-        private readonly fuse_fill_dir_Delegate _fillDelegate;
+        private readonly fuse_fill_dir_func _fill;
 
-        internal DirectoryContent(void* buffer, fuse_fill_dir_Delegate fillDelegate)
+        internal DirectoryContent(void* buffer, fuse_fill_dir_func fill)
         {
             _buffer = buffer;
-            _fillDelegate = fillDelegate;
+            _fill = fill;
         }
 
         public void AddEntry(string name) // TODO: extend API
@@ -32,7 +32,7 @@ namespace Tmds.Fuse
                     ThrowNameTooLongException();
                 }
                 buffer[length] = 0;
-                _fillDelegate(_buffer, bytesPtr, null, 0, 0);
+                _fill(_buffer, bytesPtr, null, 0, 0);
             }
         }
 
@@ -46,7 +46,7 @@ namespace Tmds.Fuse
                 }
                 fixed (byte* bytesPtr = name)
                 {
-                    _fillDelegate(_buffer, bytesPtr, null, 0, 0);
+                    _fill(_buffer, bytesPtr, null, 0, 0);
                 }
             }
             else
@@ -60,7 +60,7 @@ namespace Tmds.Fuse
                 buffer[name.Length] = 0;
                 fixed (byte* bytesPtr = buffer)
                 {
-                    _fillDelegate(_buffer, bytesPtr, null, 0, 0);
+                    _fill(_buffer, bytesPtr, null, 0, 0);
                 }
             }
         }
